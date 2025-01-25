@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagramme des Commissions</title>
+  <style>
+    
+    @font-face {
+      font-family: 'Ted Next';
+      src: url('https://raw.githubusercontent.com/rogersrepaccess/devis/main/fonts/TedNext-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    
+    body {
+      font-family: Ted Next;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .chart-container {
+      width: 90%;
+      margin: 40px auto;
+    }
+    
+    fieldset {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
+      font-weight: normal;
+      width: 600px;
+    }
+    legend {
+      font-weight: bold;
+      padding: 0 5px;
+      font-size: 20px;
+      text-align: center;
+    }
+    
+  </style>
+</head>
+<body>
+  <fieldset>
+  <legend>Distribution ($)</legend>
+  <div class="chart-container">
+    <canvas id="barChart"></canvas>
+  </div>
+  </fieldset>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycby-etAq97MuT1zAroGo8diu7q1AaZjqVBeGGRUDyWIR7C8CeU9-7kTav8c_bkTh5DXk/exec";
+
+    async function fetchData() {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const barLabels = []; // Axe X (Représentants)
+        const barData = [];   // Axe Y (Montants)
+
+        data.forEach(row => {
+          // Ignorer les lignes où REP est vide ou "Non attribué"
+          if (!row.REP || row.REP === "Non attribué") return;
+
+          // Ajouter les données au diagramme
+          barLabels.push(row.REP);
+          barData.push(parseFloat(row.AMT)); // Convertir en nombre
+        });
+
+        // Créer le diagramme à barres
+        createBarChart(barLabels, barData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données :', error);
+      }
+    }
+
+    function createBarChart(labels, data) {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Montant ($)',
+        data: data,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => `$${value.toLocaleString()}`, // Format monétaire
+            font: {
+              family: "Ted Next", // Changer la police de l'axe Y
+              size: 14 // Taille de la police
+            }
+          },
+          title: {
+            display: true,
+            text: '',
+            font: {
+              family: "Ted Next", // Police du titre
+              size: 0 // Taille de la police du titre
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              family: "Ted Next", // Changer la police de l'axe X
+              size: 14
+            }
+          },
+          title: {
+            display: true,
+            text: '',
+            font: {
+              family: "Ted Next", // Police du titre
+              size: 0
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            font: {
+              family: "Ted Next", // Police de la légende
+              size: 14
+            }
+          }
+        },
+        tooltip: {
+          bodyFont: {
+            family: "Ted Next", // Police des infobulles
+            size: 14
+          },
+          titleFont: {
+            family: "Ted Next", // Police du titre des infobulles
+            size: 16
+          }
+        }
+      }
+    }
+  });
+}
+
+
+    fetchData();
+  </script>
+</fieldset>
+</html>
